@@ -65,7 +65,7 @@ width:100%;
 }
 
 .hero-image {
-  background-color:#de2141;
+  background-color:#e96011;
   height:50%;
   background-position: center;
   background-repeat: no-repeat;
@@ -123,13 +123,32 @@ width:100%;
 
 #main {
   transition: margin-left .5s;
-  background-color:#de2141;
+  background-color:#e96011;
   padding: 16px;
 }
 
 @media screen and (max-height: 450px) {
   .sidenav {padding-top: 15px;}
   .sidenav a {font-size: 18px;}
+}
+
+.textbox{
+left:0px;
+width:60%;
+background-color: rgb(226, 226, 226);
+color: black;
+padding-bottom: 2px;
+border-radius: 5px;
+}
+
+.textboxtop{
+background-color: #e96011;
+top: 0px;;
+left:0;
+height: 50px;
+width:100%;
+border-top-left-radius: 5px;
+border-top-right-radius: 5px;
 }
 
 
@@ -140,10 +159,8 @@ width:100%;
 <!-- ====================================================================================================== -->
 
 <div id="mySidenav" class="sidenav">
-  <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
+  <a href="javascript:void(0)" class="closebtn" onclick="openNav()">&times;</a>
   <a href="#">About</a>
-  <a href="#">Services</a>
-  <a href="#">Clients</a>
   <a href="#">Contact</a>
 </div>
 
@@ -154,8 +171,8 @@ width:100%;
   <div class="hero-image">
     <img src="Untitled-3.png" alt="tee for two" style="width:100%;left:0px;top:0px;">
     <div class="hero-text">
-      <h1 style="margin:10px;font-size:40px">  I am Luke Alexander  </h1>
-      <p style="margin: 0px;">This is my portpholio</p>
+      <h1 style="margin:10px;font-size:80px">    Welcome     </h1>
+      <p style="margin: 3px;font-size:15px;padding-bottom: 3px;">  Portfolio by Luke Alexander  </p>
     </div>
   </div>
 </div>
@@ -168,6 +185,7 @@ width:100%;
   <div id="main" style >
 
     <span style="font-size:30px;cursor:pointer" onclick="openNav()">&#9776; </span>
+    
 
   </div>
     
@@ -177,8 +195,19 @@ width:100%;
 
 
 <div class="content">
+  <div class="textbox">
+
+    <div class="textboxtop">
+        <p style="padding-left: 7px;padding-top: 7px;">About Me</p>
+    </div>
+
+    <div style="padding-left: 5px; padding-right: 4px;">
+        <p>okokokokok </p>
+    </div>
 
 </div>
+</div>
+<!-- ====================================================================================================== -->
 
 <script>
 window.onscroll = function() {myFunction()};
@@ -187,7 +216,7 @@ var navbar = document.getElementById("navbar");
 var sticky = navbar.offsetTop;
 
 function myFunction() {
-  if (window.pageYOffset -470>= sticky) {
+  if (window.pageYOffset -520>= sticky) {
     navbar.classList.add("sticky")
   } else {
     navbar.classList.remove("sticky");
@@ -216,6 +245,7 @@ function myFunction() {
     document.getElementById("mySidenav").style.width = "0";
     document.getElementById("main").style.marginLeft= "0";
   }
+
 </script>
 
 </body>
