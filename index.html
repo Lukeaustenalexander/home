@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Desktop UI</title>
+  <style>
+    :root {
+      --bg-main: #9a9280;
+      --highlight: #f5e5c1;
+      --text-dark: #3e3e3e;
+      --accent-main: #f4722b;
+      --accent-dark: #b46032;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html, body {
+      height: 100%;
+      background-color: var(--bg-main);
+      color: var(--text-dark);
+      font-family: 'Segoe UI', sans-serif;
+      overflow: hidden;
+    }
+
+    body a {
+        color: #4763dd;
+        text-decoration: underline;
+    }
+
+    body.gridlines::before {
+      content: "";
+      position: absolute;
+      top: 60px;
+      left: 0;
+      width: 100%;
+      height: calc(100% - 60px);
+      background-image: 
+        repeating-linear-gradient(to right, rgba(0,0,0,0.1) 0, transparent 2px, transparent 80px),
+        repeating-linear-gradient(to bottom, rgba(0,0,0,0.1) 0, transparent 2px, transparent 80px);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    body a:hover {
+        color: #4c2ca3;
+        text-decoration: underline;
+    }
+
+    body.dark-mode {
+      background-color: var(--text-dark);
+      color: var(--highlight);
+    }
+
+    body.dark-mode .app-icon {
+      text-shadow: 0 0 4px rgba(255,255,255,0.6);
+    }
+
+    body.dark-mode .window {
+      background-color: var(--text-dark);
+      color: var(--highlight);
+    }
+
+    body.dark-mode #taskbar {
+      background-color: var(--bg-main);
+      color: var(--text-dark);
+    }
+
+    body.dark-mode .window-header {
+      background-color: var(--accent-main);
+      border-bottom-color: var(--accent-main);
+    }
+
+    body.dark-mode .icon.active {
+      background-color: var(--accent-main);
+    }
+
+    body.dark-mode a {
+        color: #9cdcfb;
+    }
+
+    body.dark-mode a:hover {
+        color: #469ed1;
+    }
+
+    body.borders .window {
+      border: 0px !important;
+    }
+
+    #taskbar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 50px;
+      background-color: var(--highlight);
+      display: flex;
+      align-items: center;
+      padding: 0 1rem;
+      z-index: 1000;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+
+    #desktop {
+      position: absolute;
+      z-index: 1;
+    }
+
+    .app-icon {
+      width: 60px;
+      height: 60px;
+      text-align: center;
+      font-size: 16px;
+      color: white;
+      cursor: pointer;
+      user-select: none;
+      text-shadow: 0 0 4px rgba(0,0,0,0.6);
+      position: absolute;
+      border-radius: 8px;
+      transition: transform 0.1s ease-in-out;
+      background-color: rgba(0, 0, 0, 0.3);
+    }
+
+    .app-icon.selected {
+      background-color: rgba(0, 0, 0, 0.5);
+    }
+
+    .icon {
+      margin-right: 1rem;
+      background-color: var(--accent-dark);
+      border-radius: 4px;
+      padding: 6px 12px;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      user-select: none;
+      transition: background-color 0.2s;
+    }
+
+    .icon.active {
+      background-color: var(--accent-main);
+    }
+
+    .window {
+      position: absolute;
+      width: 300px;
+      height: 200px;
+      background-color: var(--highlight);
+      border: 2px solid var(--accent-dark);
+      border-radius: 6px;
+      box-shadow: 3px 3px 8px rgba(0,0,0,0.3);
+      top: 100px;
+      left: 100px;
+      display: none;
+      resize: both;
+      overflow: auto;
+    }
+
+    .window[data-resizable="false"] {
+      resize: none;
+    }
+
+    .window-header {
+      background-color: var(--accent-main);
+      padding: 8px;
+      cursor: move;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 2px solid var(--accent-dark);
+      color: white;
+    }
+
+    .close-btn {
+      background-color: var(--accent-dark);
+      color: white;
+      border: none;
+      border-radius: 3px;
+      cursor: pointer;
+      padding: 2px 6px;
+      margin-left: 4px;
+    }
+
+    .window-content {
+      padding: 1rem;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="taskbar"></div>
+
+  <div id="desktop">
+    <div class="app-icon" id="about-icon" style="left:50px; top:50px;" role="button" tabindex="0">📁<br/>About</div>
+    <div class="app-icon" id="projects-icon" style="left:50px; top:150px;" role="button" tabindex="0">🛠<br/>Projects</div>
+    <div class="app-icon" id="contact-icon" style="left:50px; top:250px;" role="button" tabindex="0">✉<br/>Contact</div>
+    <div class="app-icon" id="settings-icon" style="left:50px; top:350px;" role="button" tabindex="0">⚙<br/>Settings</div>
+  </div>
+
+  <div class="window" id="about-window" data-resizable="true">
+    <div class="window-header" onmousedown="dragMouseDown(event, this.parentElement)">
+      <span>About Me</span>
+      <div>
+        <button class="close-btn" onclick="minimizeWindow('about')">_</button>
+        <button class="close-btn" onclick="closeWindow('about')">X</button>
+      </div>
+    </div>
+    <div class="window-content">
+      <p>Hi! I'm a creative programmer passionate about web apps and digital UI.</p>
+    </div>
+  </div>
+
+  <div class="window" id="projects-window" data-resizable="true">
+    <div class="window-header" onmousedown="dragMouseDown(event, this.parentElement)">
+      <span>Projects</span>
+      <div>
+        <button class="close-btn" onclick="minimizeWindow('projects')">_</button>
+        <button class="close-btn" onclick="closeWindow('projects')">X</button>
+      </div>
+    </div>
+    <div class="window-content">
+      <ul>
+        <li>⚙ Portfolio Website</li>
+        <li>🔍 API Search Tool</li>
+        <li>🕹 Game UI Clone</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="window" id="contact-window" data-resizable="true">
+    <div class="window-header" onmousedown="dragMouseDown(event, this.parentElement)">
+      <span>Contact</span>
+      <div>
+        <button class="close-btn" onclick="minimizeWindow('contact')">_</button>
+        <button class="close-btn" onclick="closeWindow('contact')">X</button>
+      </div>
+    </div>
+    <div class="window-content">
+      <p>Email : <a href="mailto:lukeaustenalexander@email.com">lukeaustenalexander@email.com</a></p>
+      <p>lol : lol</p>
+    </div>
+  </div>
+
+  <div class="window" style="width: 200px;" id="settings-window" data-resizable="false">
+    <div class="window-header" onmousedown="dragMouseDown(event, this.parentElement)">
+      <span>Settings</span>
+      <div>
+        <button class="close-btn" onclick="minimizeWindow('settings')">_</button>
+        <button class="close-btn" onclick="closeWindow('settings')">X</button>
+      </div>
+    </div>
+    <div class="window-content">
+      <label style="display: flex; align-items: center; gap: 0.5rem;">
+        <input type="checkbox" id="theme-toggle" />
+        Dark Mode
+      </label>
+      <label style="display: flex; align-items: center; gap: 0.5rem;">
+        <input type="checkbox" id="border-toggle" />
+        Disable window borders
+      </label>
+      <label style="display: flex; align-items: center; gap: 0.5rem;">
+        <input type="checkbox" id="grid-toggle" />
+        Show Grid Lines
+      </label>
+    </div>
+  </div>
+
+  <script>
+    let zIndexCounter = 1001;
+
+    function launchApp(id) {
+      const win = document.getElementById(id + '-window');
+      win.style.display = 'block';
+      win.style.zIndex = ++zIndexCounter;
+
+      const taskbar = document.getElementById('taskbar');
+      if (!document.getElementById(id + '-task')) {
+        const icon = document.createElement('div');
+        icon.id = id + '-task';
+        icon.className = 'icon';
+        icon.textContent = id.charAt(0).toUpperCase() + id.slice(1);
+        icon.onclick = () => toggleWindow(id);
+        taskbar.appendChild(icon);
+      }
+      updateTaskbarIconState(id, true);
+    }
+
+    function closeWindow(id) {
+      document.getElementById(id + '-window').style.display = 'none';
+      const taskIcon = document.getElementById(id + '-task');
+      if (taskIcon) taskIcon.remove();
+    }
+
+    function minimizeWindow(id) {
+      document.getElementById(id + '-window').style.display = 'none';
+      updateTaskbarIconState(id, false);
+    }
+
+    function toggleWindow(id) {
+      const win = document.getElementById(id + '-window');
+      const isVisible = win.style.display === 'block';
+      win.style.display = isVisible ? 'none' : 'block';
+      if (!isVisible) win.style.zIndex = ++zIndexCounter;
+      updateTaskbarIconState(id, !isVisible);
+    }
+
+    function updateTaskbarIconState(id, isActive) {
+      const icon = document.getElementById(id + '-task');
+      if (icon) icon.classList.toggle('active', isActive);
+    }
+
+    function dragMouseDown(e, windowEl) {
+      e.preventDefault();
+      bringToFront(windowEl);
+      let pos3 = e.clientX, pos4 = e.clientY;
+      const minTop = 50;
+      const maxTop = window.innerHeight - windowEl.offsetHeight;
+      const maxLeft = window.innerWidth - windowEl.offsetWidth;
+
+      function elementDrag(ev) {
+        ev.preventDefault();
+        const dx = pos3 - ev.clientX;
+        const dy = pos4 - ev.clientY;
+        pos3 = ev.clientX; pos4 = ev.clientY;
+
+        let newTop = windowEl.offsetTop - dy;
+        let newLeft = windowEl.offsetLeft - dx;
+        if (newTop < minTop) newTop = minTop;
+        if (newTop > maxTop) newTop = maxTop;
+        if (newLeft < 0) newLeft = 0;
+        if (newLeft > maxLeft) newLeft = maxLeft;
+
+        windowEl.style.top = newTop + "px";
+        windowEl.style.left = newLeft + "px";
+      }
+
+      function stopDrag() {
+        document.removeEventListener('mouseup', stopDrag);
+        document.removeEventListener('mousemove', elementDrag);
+      }
+
+      document.addEventListener('mouseup', stopDrag);
+      document.addEventListener('mousemove', elementDrag);
+    }
+
+    function bringToFront(el) {
+      el.style.zIndex = ++zIndexCounter;
+    }
+
+    function setWindowResizable(id, resizable) {
+      const win = document.getElementById(id + '-window');
+      win.style.resize = resizable ? 'both' : 'none';
+      win.setAttribute('data-resizable', resizable);
+    }
+
+    setWindowResizable('about', false);
+
+    const iconSize = 60, padding = 20;
+    let grid = [], columns = 0, rows = 0, occupied = new Set();
+
+    function initializeGrid() {
+      const screenWidth = window.innerWidth;
+      const screenHeight = window.innerHeight;
+      columns = Math.floor((screenWidth - padding * 2) / (iconSize + padding));
+      rows = Math.floor((screenHeight - 60 - padding) / (iconSize + padding));
+      grid = [];
+      for (let y = 0; y < rows; y++) {
+        for (let x = 0; x < columns; x++) {
+          grid.push({ x, y });
+        }
+      }
+      occupied.clear();
+    }
+
+    function getNearestFreeCell(x, y) {
+      let minDist = Infinity, bestCell = null;
+      for (let cell of grid) {
+        const key = `${cell.x},${cell.y}`;
+        if (occupied.has(key)) continue;
+        const cellX = padding + cell.x * (iconSize + padding);
+        const cellY = 60 + padding + cell.y * (iconSize + padding);
+        const dist = Math.hypot(x - cellX, y - cellY);
+        if (dist < minDist) {
+          minDist = dist;
+          bestCell = { ...cell, left: cellX, top: cellY };
+        }
+      }
+      return bestCell;
+    }
+
+    function snapAllIconsToGrid() {
+      const savedPositions = JSON.parse(localStorage.getItem('iconPositions') || '{}');
+      document.querySelectorAll('.app-icon').forEach(icon => {
+        const id = icon.id;
+        if (savedPositions[id]) {
+          icon.style.left = savedPositions[id].left;
+          icon.style.top = savedPositions[id].top;
+          icon.dataset.grid = savedPositions[id].grid;
+          occupied.add(savedPositions[id].grid);
+        } else {
+          const rect = icon.getBoundingClientRect();
+          const snapped = getNearestFreeCell(rect.left, rect.top);
+          if (snapped) {
+            icon.style.left = snapped.left + 'px';
+            icon.style.top = snapped.top + 'px';
+            const key = `${snapped.x},${snapped.y}`;
+            icon.dataset.grid = key;
+            occupied.add(key);
+          }
+        }
+      });
+    }
+
+    window.addEventListener('resize', () => {
+      initializeGrid();
+      snapAllIconsToGrid();
+    });
+
+    initializeGrid();
+    snapAllIconsToGrid();
+
+    document.querySelectorAll('.app-icon').forEach(icon => {
+      icon.addEventListener('dblclick', () => {
+        const id = icon.id.replace('-icon','');
+        launchApp(id);
+      });
+
+      icon.addEventListener('mousedown', (e) => {
+        let dragTimeout = setTimeout(() => {
+          let offsetX = e.clientX - icon.offsetLeft;
+          let offsetY = e.clientY - icon.offsetTop;
+          icon.classList.add('selected');
+
+          const prev = icon.dataset.grid;
+          if (prev) occupied.delete(prev);
+
+          function moveAt(ev) {
+            icon.style.left = (ev.clientX - offsetX) + 'px';
+            icon.style.top = (ev.clientY - offsetY) + 'px';
+          }
+
+          function stopMove(ev) {
+            icon.classList.remove('selected');
+            document.removeEventListener('mousemove', moveAt);
+            document.removeEventListener('mouseup', stopMove);
+            const snapped = getNearestFreeCell(ev.clientX, ev.clientY);
+            if (snapped) {
+              icon.style.left = snapped.left + 'px';
+              icon.style.top = snapped.top + 'px';
+              const key = `${snapped.x},${snapped.y}`;
+              icon.dataset.grid = key;
+              occupied.add(key);
+              let positions = JSON.parse(localStorage.getItem('iconPositions') || '{}');
+              positions[icon.id] = {
+                left: icon.style.left,
+                top: icon.style.top,
+                grid: icon.dataset.grid
+              };
+              localStorage.setItem('iconPositions', JSON.stringify(positions));
+            }
+          }
+
+          document.addEventListener('mousemove', moveAt);
+          document.addEventListener('mouseup', stopMove);
+        }, 200);
+
+        icon.addEventListener('mouseup', () => {
+          clearTimeout(dragTimeout);
+        }, { once: true });
+      });
+    });
+
+    window.addEventListener('DOMContentLoaded', () => {
+      const isDark = localStorage.getItem('darkMode') === 'true';
+      const borders = localStorage.getItem('borders') === 'true';
+      const showGrid = localStorage.getItem('gridLines') === 'true';
+
+      document.body.classList.toggle('dark-mode', isDark);
+      document.body.classList.toggle('borders', borders);
+      document.body.classList.toggle('gridlines', showGrid);
+
+      document.getElementById('theme-toggle').checked = isDark;
+      document.getElementById('border-toggle').checked = borders;
+      document.getElementById('grid-toggle').checked = showGrid;
+    });
+
+    document.getElementById('theme-toggle').addEventListener('change', function() {
+      const isDark = this.checked;
+      document.body.classList.toggle('dark-mode', isDark);
+      localStorage.setItem('darkMode', isDark);
+    });
+
+    document.getElementById('border-toggle').addEventListener('change', function() {
+      const borders = this.checked;
+      document.body.classList.toggle('borders', borders);
+      localStorage.setItem('borders', borders);
+    });
+
+    document.getElementById('grid-toggle').addEventListener('change', function () {
+      const showGrid = this.checked;
+      document.body.classList.toggle('gridlines', showGrid);
+      localStorage.setItem('gridLines', showGrid);
+    });
+  </script>
+</body>
+</html>
